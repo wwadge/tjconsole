@@ -189,6 +189,7 @@ public class TJConsole {
         // not supported yet //options.addOption(OptionBuilder.withDescription("Run script (javaScript or groovy) from file.").withArgName("file").hasArgs(1).create("script"));
         options.addOption(OptionBuilder.withDescription("Show local jvm java processes list and exit.").create("ps"));
         options.addOption(OptionBuilder.withDescription("Do not use colors for output.").create("xterm"));
+        options.addOption(OptionBuilder.withDescription("Fetch the mBean values and exit").create("get"));
         options.addOption(OptionBuilder.withDescription("Jmx authentication username").withArgName("username").hasArgs(1).create("username"));
         options.addOption(OptionBuilder.withDescription("Jmx authentication password").withArgName("password").hasArgs(1).create("password"));
         options.addOption(OptionBuilder.withDescription("Display this help and exit.").create('h'));
@@ -196,6 +197,7 @@ public class TJConsole {
 
         TJConsole tjConsole = new TJConsole(props);
         boolean scriptMode = false;
+        boolean getMode = false;
         Output consoleOutput = null;
         List<CommandAction> actions = new LinkedList<CommandAction>();
         try {
@@ -226,6 +228,11 @@ public class TJConsole {
                         actions.add(tjConsole.findCommandAction("run " + cli.getOptionValue("script")));
                         scriptMode = true;
                     }
+                    if (cli.hasOption("get")) {
+                        actions.add(tjConsole.findCommandAction("get"));
+                        getMode = true;
+                    }
+
                     if (cli.hasOption("ps")) {
                         actions.clear();
                         actions.add(tjConsole.findCommandAction("ps"));
@@ -246,7 +253,7 @@ public class TJConsole {
             }
             // init
             tjConsole.output = consoleOutput;
-            if (!scriptMode) {
+            if (!scriptMode && !getMode) {
                 tjConsole.initInteractiveMode();
             }
             for (CommandAction action : actions) {
@@ -257,7 +264,7 @@ public class TJConsole {
                     throw ex;
                 }
             }
-            if (!scriptMode) {
+            if (!scriptMode && !getMode) {
                 tjConsole.waitForCommands();
             }
         } catch (EndOfInputException ex) {
